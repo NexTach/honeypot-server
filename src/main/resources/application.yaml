@@ -1,3 +1,50 @@
 spring:
   application:
     name: honeypot-server
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/honeypot?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+honeypot:
+  upload:
+    max-size: ${UPLOAD_MAX_SIZE:52428800}
+  jwt:
+    secret: ${JWT_SECRET:changeThisToAVeryLongSecretKeyForHMACSHA256AtLeast256BitsLong}
+    access-ttl: 30m
+    refresh-ttl: 14d
+  frontend:
+    origin: ${FRONTEND_ORIGIN:http://localhost:3000}
+    redirect-uri: ${FRONTEND_REDIRECT_URI:http://localhost:3000/auth/callback}
+  s3:
+    endpoint: ${S3_ENDPOINT:http://localhost:8333}
+    access-key: ${S3_ACCESS_KEY:accessKey}
+    secret-key: ${S3_SECRET_KEY:secretKey}
+    bucket: ${S3_BUCKET:honeypot}
+    presign-ttl: 60s
+
+datagsm:
+  oauth:
+    client-id: ${DATAGSM_CLIENT_ID:clientId}
+    client-secret: ${DATAGSM_CLIENT_SECRET:clientSecret}
+    authorization-base-url: ${DATAGSM_AUTHORIZATION_BASE_URL:https://oauth.authorization.datagsm.kr}
+    user-info-base-url: ${DATAGSM_USER_INFO_BASE_URL:https://oauth.resource.datagsm.kr}
+    redirect-uri: ${DATAGSM_REDIRECT_URI:http://localhost:8080/v1/auth/datagsm/callback}
+
+sdk:
+  swagger:
+    paths-to-match:
+      - "/v1/**"
