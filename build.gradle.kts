@@ -43,8 +43,10 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-impl:0.12.+")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.+")
 
-	// SpringDoc (Swagger UI)
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.+")
+	// SpringDoc (Swagger UI) — pin 3.0.x for Spring Boot 4 / Spring Framework 7 compatibility.
+	// the-sdk pulls 2.8.x transitively, which is built against Boot 3 and fails at startup
+	// (NoClassDefFoundError: WebMvcProperties). This direct dependency overrides it.
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
