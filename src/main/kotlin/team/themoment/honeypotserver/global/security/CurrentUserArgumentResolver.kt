@@ -1,6 +1,7 @@
 package team.themoment.honeypotserver.global.security
 
 import org.springframework.core.MethodParameter
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
@@ -22,6 +23,6 @@ class CurrentUserArgumentResolver : HandlerMethodArgumentResolver {
     ): AuthPrincipal {
         val authentication = SecurityContextHolder.getContext().authentication
         return authentication?.principal as? AuthPrincipal
-            ?: throw IllegalStateException("No authenticated user found in SecurityContext")
+            ?: throw AuthenticationCredentialsNotFoundException("No authenticated user found in SecurityContext")
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 
 import team.themoment.honeypotserver.domain.gif.domain.Gif
+import team.themoment.honeypotserver.domain.gif.domain.GifQueryRepository
 
 @Repository
 class GifQueryRepositoryImpl(
@@ -30,7 +31,6 @@ class GifQueryRepositoryImpl(
         // ─── 결과 쿼리 ───────────────────────────────────────────────────────────
         val jpql = buildString {
             append("SELECT DISTINCT g FROM Gif g")
-            append(" LEFT JOIN g.uploader u")
             if (!normalizedKeyword.isNullOrBlank()) {
                 append(" LEFT JOIN g.tags t")
             }

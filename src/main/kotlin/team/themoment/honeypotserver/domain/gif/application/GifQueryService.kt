@@ -7,14 +7,14 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.themoment.honeypotserver.domain.gif.domain.Gif
+import team.themoment.honeypotserver.domain.gif.domain.GifQueryRepository
 import team.themoment.honeypotserver.domain.gif.domain.GifRepository
-import team.themoment.honeypotserver.domain.gif.infra.GifQueryRepository
 import team.themoment.honeypotserver.domain.user.domain.Role
 import team.themoment.honeypotserver.global.security.AuthPrincipal
 import team.themoment.sdk.exception.ExpectedException
 
-private const val DEFAULT_PAGE_SIZE = 20
 private const val MAX_PAGE_SIZE = 100
+private val ALLOWED_SORTS = setOf("latest", "popular")
 
 @Service
 @Transactional(readOnly = true)
@@ -58,10 +58,17 @@ class GifQueryService(
         principal: AuthPrincipal,
         pageable: Pageable,
     ): Page<Gif> {
+        val normalizedSort = sort.lowercase()
+        if (normalizedSort !in ALLOWED_SORTS) {
+            throw ExpectedException(
+                "Invalid sort value: '$sort' (allowed: latest, popular)",
+                HttpStatus.BAD_REQUEST,
+            )
+        }
         val safePageable = capPageSize(pageable)
         return gifQueryRepository.search(
             keyword = keyword,
-            sort = sort,
+            sort = normalizedSort,
             viewerId = principal.userId,
             pageable = safePageable,
         )

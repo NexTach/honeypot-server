@@ -1,8 +1,7 @@
-package team.themoment.honeypotserver.domain.gif.infra
+package team.themoment.honeypotserver.domain.gif.domain
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import team.themoment.honeypotserver.domain.gif.domain.Gif
 
 interface GifQueryRepository {
 
