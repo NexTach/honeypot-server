@@ -1,0 +1,16 @@
+groups:
+  - claude
+  - codex
+  - gemini
+
+overrides:
+  claude/settings: true
+  claude/hooks/dispatcher: true
+  claude/hooks/ktlint: true
+  claude/hooks/kotest: true
+  codex/hooks-json: true
+  codex/hooks/dispatcher: true
+  codex/hooks/ktlint: true
+  codex/hooks/kotest: true
+
+language: ko

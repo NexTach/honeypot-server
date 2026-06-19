@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class HoneypotServerApplication
 
 fun main(args: Array<String>) {
-	runApplication<HoneypotServerApplication>(*args)
+    runApplication<HoneypotServerApplication>(*args)
 }
