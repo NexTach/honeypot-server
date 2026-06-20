@@ -1,13 +1,13 @@
 package team.themoment.honeypotserver.domain.user.application
 
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.themoment.honeypotserver.domain.user.domain.User
 import team.themoment.honeypotserver.domain.user.infra.DataGsmClient
 import team.themoment.honeypotserver.domain.user.infra.UserRepository
+import team.themoment.honeypotserver.global.config.FrontendProperties
 import team.themoment.honeypotserver.global.security.JwtProperties
 import team.themoment.honeypotserver.global.security.JwtProvider
 import team.themoment.sdk.exception.ExpectedException
@@ -21,16 +21,22 @@ class AuthService(
     private val userRepository: UserRepository,
     private val jwtProvider: JwtProvider,
     private val jwtProperties: JwtProperties,
-    @Value("\${honeypot.frontend.redirect-uri}") private val frontendRedirectUri: String,
+    private val frontendProperties: FrontendProperties,
 ) {
     private val secureRandom = SecureRandom()
 
-    fun buildLoginRedirect(response: HttpServletResponse): URI {
+    fun buildLoginRedirect(
+        requestedRedirectUri: String?,
+        response: HttpServletResponse,
+    ): URI {
         val state = generateRandomString(32)
         val codeVerifier = generateRandomString(64)
+        // 프론트가 선택한 콜백 redirect_uri 를 화이트리스트 검증 후 쿠키에 저장(stateless 유지).
+        val redirectUri = frontendProperties.resolveRedirectUri(requestedRedirectUri)
 
         setHttpOnlyCookie(response, STATE_COOKIE, state, 300)
         setHttpOnlyCookie(response, CODE_VERIFIER_COOKIE, codeVerifier, 300)
+        setHttpOnlyCookie(response, REDIRECT_URI_COOKIE, redirectUri, 300)
 
         val authUrl = dataGsmClient.buildLoginUrl(state, codeVerifier)
         return URI.create(authUrl)
@@ -42,6 +48,7 @@ class AuthService(
         state: String,
         cookieState: String?,
         cookieVerifier: String?,
+        cookieRedirectUri: String?,
         response: HttpServletResponse,
     ): URI {
         if (cookieState == null || cookieVerifier == null || cookieState != state) {
@@ -78,7 +85,9 @@ class AuthService(
         setRefreshTokenCookie(response, jwtRefresh)
         clearOAuthCookies(response)
 
-        return URI.create("$frontendRedirectUri#accessToken=$jwtAccess")
+        // 쿠키에 저장된 redirect_uri 를 사용하되, 다시 화이트리스트 검증(쿠키 변조 방어).
+        val redirectUri = frontendProperties.resolveRedirectUri(cookieRedirectUri)
+        return URI.create("$redirectUri#accessToken=$jwtAccess")
     }
 
     fun reissueWithCookie(
@@ -128,6 +137,7 @@ class AuthService(
     private fun clearOAuthCookies(response: HttpServletResponse) {
         setHttpOnlyCookie(response, STATE_COOKIE, "", 0)
         setHttpOnlyCookie(response, CODE_VERIFIER_COOKIE, "", 0)
+        setHttpOnlyCookie(response, REDIRECT_URI_COOKIE, "", 0)
     }
 
     private fun generateRandomString(byteLength: Int): String {
@@ -140,5 +150,6 @@ class AuthService(
         const val REFRESH_TOKEN_COOKIE = "refreshToken"
         const val STATE_COOKIE = "oauth_state"
         const val CODE_VERIFIER_COOKIE = "oauth_code_verifier"
+        const val REDIRECT_URI_COOKIE = "oauth_redirect_uri"
     }
 }

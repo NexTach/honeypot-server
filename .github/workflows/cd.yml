@@ -36,8 +36,8 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          FRONTEND_ORIGIN: ${{ secrets.FRONTEND_ORIGIN }}
-          FRONTEND_REDIRECT_URI: ${{ secrets.FRONTEND_REDIRECT_URI }}
+          FRONTEND_ORIGINS: ${{ secrets.FRONTEND_ORIGINS }}
+          FRONTEND_REDIRECT_URIS: ${{ secrets.FRONTEND_REDIRECT_URIS }}
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
           S3_PUBLIC_ENDPOINT: ${{ secrets.S3_PUBLIC_ENDPOINT }}
           S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
@@ -53,8 +53,8 @@ jobs:
             echo "DB_USERNAME=${DB_USERNAME}"
             echo "DB_PASSWORD=${DB_PASSWORD}"
             echo "JWT_SECRET=${JWT_SECRET}"
-            echo "FRONTEND_ORIGIN=${FRONTEND_ORIGIN}"
-            echo "FRONTEND_REDIRECT_URI=${FRONTEND_REDIRECT_URI}"
+            echo "FRONTEND_ORIGINS=${FRONTEND_ORIGINS}"
+            echo "FRONTEND_REDIRECT_URIS=${FRONTEND_REDIRECT_URIS}"
             echo "S3_ENDPOINT=${S3_ENDPOINT}"
             echo "S3_PUBLIC_ENDPOINT=${S3_PUBLIC_ENDPOINT}"
             echo "S3_ACCESS_KEY=${S3_ACCESS_KEY}"

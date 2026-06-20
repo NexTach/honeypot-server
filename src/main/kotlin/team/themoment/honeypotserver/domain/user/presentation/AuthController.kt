@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import team.themoment.honeypotserver.domain.user.application.AuthService
 import team.themoment.honeypotserver.domain.user.application.AuthService.Companion.CODE_VERIFIER_COOKIE
+import team.themoment.honeypotserver.domain.user.application.AuthService.Companion.REDIRECT_URI_COOKIE
 import team.themoment.honeypotserver.domain.user.application.AuthService.Companion.REFRESH_TOKEN_COOKIE
 import team.themoment.honeypotserver.domain.user.application.AuthService.Companion.STATE_COOKIE
 import team.themoment.honeypotserver.domain.user.presentation.dto.response.ReissueResponse
@@ -22,8 +23,11 @@ class AuthController(
     private val authService: AuthService,
 ) {
     @GetMapping("/datagsm/login")
-    fun login(response: HttpServletResponse): ResponseEntity<Void> {
-        val redirectUri = authService.buildLoginRedirect(response)
+    fun login(
+        @RequestParam(name = "redirect_uri", required = false) requestedRedirectUri: String?,
+        response: HttpServletResponse,
+    ): ResponseEntity<Void> {
+        val redirectUri = authService.buildLoginRedirect(requestedRedirectUri, response)
         return ResponseEntity
             .status(HttpStatus.FOUND)
             .header(HttpHeaders.LOCATION, redirectUri.toString())
@@ -36,9 +40,10 @@ class AuthController(
         @RequestParam state: String,
         @CookieValue(name = STATE_COOKIE, required = false) cookieState: String?,
         @CookieValue(name = CODE_VERIFIER_COOKIE, required = false) cookieVerifier: String?,
+        @CookieValue(name = REDIRECT_URI_COOKIE, required = false) cookieRedirectUri: String?,
         response: HttpServletResponse,
     ): ResponseEntity<Void> {
-        val redirectUri = authService.handleCallback(code, state, cookieState, cookieVerifier, response)
+        val redirectUri = authService.handleCallback(code, state, cookieState, cookieVerifier, cookieRedirectUri, response)
         return ResponseEntity
             .status(HttpStatus.FOUND)
             .header(HttpHeaders.LOCATION, redirectUri.toString())

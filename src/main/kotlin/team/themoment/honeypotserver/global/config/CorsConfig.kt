@@ -1,6 +1,5 @@
 package team.themoment.honeypotserver.global.config
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.cors.CorsConfiguration
@@ -9,12 +8,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 class CorsConfig(
-    @Value("\${honeypot.frontend.origin}") private val frontendOrigin: String,
+    private val frontendProperties: FrontendProperties,
 ) {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins = listOf(frontendOrigin)
+        config.allowedOrigins = frontendProperties.origins
         config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
         config.allowedHeaders = listOf("*")
         config.exposedHeaders = listOf("Authorization", "Set-Cookie")

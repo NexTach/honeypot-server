@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import team.themoment.honeypotserver.global.config.DataGsmProperties
+import team.themoment.honeypotserver.global.config.FrontendProperties
 import team.themoment.honeypotserver.global.config.S3Properties
 import team.themoment.honeypotserver.global.security.JwtProperties
 
@@ -14,6 +15,7 @@ import team.themoment.honeypotserver.global.security.JwtProperties
     JwtProperties::class,
     S3Properties::class,
     DataGsmProperties::class,
+    FrontendProperties::class,
 )
 class HoneypotServerApplication
 
