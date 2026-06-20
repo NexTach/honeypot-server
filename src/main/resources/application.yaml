@@ -1,10 +1,3 @@
-server:
-  # 리버스 프록시(nginx)가 /honeypot prefix 를 strip 하지 않고 그대로 전달하므로,
-  # 앱도 동일 context-path 로 서빙한다. (X-Forwarded-Prefix 방식은 the-sdk 응답 래핑과
-  # SpringDoc byte[] 직렬화가 충돌하므로 사용하지 않는다.) 로컬 개발은 빈 값(루트).
-  servlet:
-    context-path: ${SERVER_CONTEXT_PATH:}
-
 spring:
   application:
     name: honeypot-server
@@ -61,3 +54,11 @@ sdk:
   swagger:
     paths-to-match:
       - "/v1/**"
+
+# SpringDoc 에는 prefix 를 알리지 않는다(prefix 처리 시 api-docs 가 byte[] 직렬화되어
+# the-sdk 응답 래핑과 ClassCastException 충돌). 대신 리버스 프록시 prefix 를 swagger-ui 가
+# 호출할 URL 에만 수동으로 붙인다. 로컬은 빈 값(루트), 배포는 /honeypot.
+springdoc:
+  swagger-ui:
+    config-url: ${SWAGGER_PREFIX:}/v3/api-docs/swagger-config
+    url: ${SWAGGER_PREFIX:}/v3/api-docs

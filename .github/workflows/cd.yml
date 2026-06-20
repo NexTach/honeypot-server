@@ -49,7 +49,7 @@ jobs:
         run: |
           {
             echo "SPRING_DOCKER_COMPOSE_ENABLED=false"
-            echo "SERVER_CONTEXT_PATH=/honeypot"
+            echo "SWAGGER_PREFIX=/honeypot"
             echo "DB_URL=${DB_URL}"
             echo "DB_USERNAME=${DB_USERNAME}"
             echo "DB_PASSWORD=${DB_PASSWORD}"
