@@ -13,9 +13,10 @@ import team.themoment.honeypotserver.global.security.CurrentUser
 class UserController(
     private val userService: UserService,
 ) {
-
     @GetMapping("/me")
-    fun getMyProfile(@CurrentUser principal: AuthPrincipal): UserResponse {
+    fun getMyProfile(
+        @CurrentUser principal: AuthPrincipal,
+    ): UserResponse {
         val user = userService.getById(principal.userId)
         return UserResponse.from(user)
     }

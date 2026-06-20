@@ -12,13 +12,14 @@ data class LikePageResponse(
     val last: Boolean,
 ) {
     companion object {
-        fun from(page: Page<GifResponse>): LikePageResponse = LikePageResponse(
-            content = page.content,
-            page = page.number,
-            size = page.size,
-            totalElements = page.totalElements,
-            totalPages = page.totalPages,
-            last = page.isLast,
-        )
+        fun from(page: Page<GifResponse>): LikePageResponse =
+            LikePageResponse(
+                content = page.content,
+                page = page.number,
+                size = page.size,
+                totalElements = page.totalElements,
+                totalPages = page.totalPages,
+                last = page.isLast,
+            )
     }
 }

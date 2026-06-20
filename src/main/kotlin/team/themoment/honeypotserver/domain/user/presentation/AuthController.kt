@@ -21,11 +21,11 @@ import team.themoment.honeypotserver.domain.user.presentation.dto.response.Reiss
 class AuthController(
     private val authService: AuthService,
 ) {
-
     @GetMapping("/datagsm/login")
     fun login(response: HttpServletResponse): ResponseEntity<Void> {
         val redirectUri = authService.buildLoginRedirect(response)
-        return ResponseEntity.status(HttpStatus.FOUND)
+        return ResponseEntity
+            .status(HttpStatus.FOUND)
             .header(HttpHeaders.LOCATION, redirectUri.toString())
             .build()
     }
@@ -39,7 +39,8 @@ class AuthController(
         response: HttpServletResponse,
     ): ResponseEntity<Void> {
         val redirectUri = authService.handleCallback(code, state, cookieState, cookieVerifier, response)
-        return ResponseEntity.status(HttpStatus.FOUND)
+        return ResponseEntity
+            .status(HttpStatus.FOUND)
             .header(HttpHeaders.LOCATION, redirectUri.toString())
             .build()
     }

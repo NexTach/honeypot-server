@@ -22,15 +22,14 @@ import team.themoment.honeypotserver.global.security.CurrentUser
 class MyGifController(
     private val gifQueryService: GifQueryService,
 ) {
-
     @GetMapping
     fun getMyGifs(
         @PageableDefault(size = 20) pageable: Pageable,
         @CurrentUser principal: AuthPrincipal,
-    ): Page<GifResponse> {
-        return gifQueryService.getMyGifs(
-            principal = principal,
-            pageable = pageable,
-        ).map { GifResponse.from(it) }
-    }
+    ): Page<GifResponse> =
+        gifQueryService
+            .getMyGifs(
+                principal = principal,
+                pageable = pageable,
+            ).map { GifResponse.from(it) }
 }

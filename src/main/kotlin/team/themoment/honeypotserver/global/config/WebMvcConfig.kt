@@ -7,7 +7,6 @@ import team.themoment.honeypotserver.global.security.CurrentUserArgumentResolver
 
 @Configuration
 class WebMvcConfig : WebMvcConfigurer {
-
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(CurrentUserArgumentResolver())
     }

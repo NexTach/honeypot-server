@@ -33,21 +33,20 @@ class GifController(
     private val gifQueryService: GifQueryService,
     private val gifMediaService: GifMediaService,
 ) {
-
     @GetMapping
     fun listGifs(
         @RequestParam(required = false) keyword: String?,
         @RequestParam(defaultValue = "latest") sort: String,
         @PageableDefault(size = 20) pageable: Pageable,
         @CurrentUser principal: AuthPrincipal,
-    ): Page<GifResponse> {
-        return gifQueryService.searchGifs(
-            keyword = keyword,
-            sort = sort,
-            principal = principal,
-            pageable = pageable,
-        ).map { GifResponse.from(it) }
-    }
+    ): Page<GifResponse> =
+        gifQueryService
+            .searchGifs(
+                keyword = keyword,
+                sort = sort,
+                principal = principal,
+                pageable = pageable,
+            ).map { GifResponse.from(it) }
 
     @PostMapping(consumes = ["multipart/form-data"])
     @ResponseStatus(HttpStatus.CREATED)
@@ -59,14 +58,15 @@ class GifController(
         @RequestPart(value = "tags", required = false) tags: List<String>?,
         @CurrentUser principal: AuthPrincipal,
     ): GifResponse {
-        val gif = gifCommandService.upload(
-            file = file,
-            title = title,
-            description = description,
-            isPublic = isPublic?.toBoolean() ?: true,
-            tagNames = tags ?: emptyList(),
-            principal = principal,
-        )
+        val gif =
+            gifCommandService.upload(
+                file = file,
+                title = title,
+                description = description,
+                isPublic = isPublic?.toBoolean() ?: true,
+                tagNames = tags ?: emptyList(),
+                principal = principal,
+            )
         return GifResponse.from(gif)
     }
 
@@ -95,14 +95,15 @@ class GifController(
         @Valid @org.springframework.web.bind.annotation.RequestBody request: GifUpdateRequest,
         @CurrentUser principal: AuthPrincipal,
     ): GifResponse {
-        val gif = gifCommandService.updateMetadata(
-            gifId = id,
-            title = request.title,
-            description = request.description,
-            isPublic = request.isPublic,
-            tagNames = request.tags,
-            principal = principal,
-        )
+        val gif =
+            gifCommandService.updateMetadata(
+                gifId = id,
+                title = request.title,
+                description = request.description,
+                isPublic = request.isPublic,
+                tagNames = request.tags,
+                principal = principal,
+            )
         return GifResponse.from(gif)
     }
 

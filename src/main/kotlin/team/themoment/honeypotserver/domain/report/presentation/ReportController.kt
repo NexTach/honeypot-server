@@ -19,7 +19,6 @@ import team.themoment.honeypotserver.global.security.CurrentUser
 class ReportController(
     private val reportService: ReportService,
 ) {
-
     @PostMapping("/{gifId}/reports")
     @ResponseStatus(HttpStatus.CREATED)
     fun createReport(
@@ -27,12 +26,13 @@ class ReportController(
         @Valid @RequestBody request: CreateReportRequest,
         @CurrentUser principal: AuthPrincipal,
     ): ReportResponse {
-        val report = reportService.createReport(
-            gifId = gifId,
-            reasonTitle = request.reasonTitle,
-            detail = request.detail,
-            principal = principal,
-        )
+        val report =
+            reportService.createReport(
+                gifId = gifId,
+                reasonTitle = request.reasonTitle,
+                detail = request.detail,
+                principal = principal,
+            )
         return ReportResponse.from(report)
     }
 }

@@ -22,16 +22,22 @@ class GifQueryService(
     private val gifRepository: GifRepository,
     private val gifQueryRepository: GifQueryRepository,
 ) {
-
-    fun getGifDetail(gifId: Long, principal: AuthPrincipal?): Gif {
-        val gif = gifRepository.findById(gifId).orElseThrow {
-            ExpectedException("GIF not found", HttpStatus.NOT_FOUND)
-        }
+    fun getGifDetail(
+        gifId: Long,
+        principal: AuthPrincipal?,
+    ): Gif {
+        val gif =
+            gifRepository.findById(gifId).orElseThrow {
+                ExpectedException("GIF not found", HttpStatus.NOT_FOUND)
+            }
         checkVisibility(gif, principal)
         return gif
     }
 
-    fun checkVisibility(gif: Gif, principal: AuthPrincipal?) {
+    fun checkVisibility(
+        gif: Gif,
+        principal: AuthPrincipal?,
+    ) {
         if (principal != null && principal.role == Role.ADMIN) return
 
         if (gif.blindedByAdmin) {
@@ -77,7 +83,10 @@ class GifQueryService(
     /**
      * 내가 올린 GIF 목록 (비공개·blinded 포함, 마이페이지용).
      */
-    fun getMyGifs(principal: AuthPrincipal, pageable: Pageable): Page<Gif> {
+    fun getMyGifs(
+        principal: AuthPrincipal,
+        pageable: Pageable,
+    ): Page<Gif> {
         val safePageable = capPageSize(pageable)
         return gifQueryRepository.findByUploader(
             uploaderId = principal.userId,
@@ -87,7 +96,10 @@ class GifQueryService(
 
     private fun capPageSize(pageable: Pageable): Pageable {
         val size = pageable.pageSize.coerceIn(1, MAX_PAGE_SIZE)
-        return if (size == pageable.pageSize) pageable
-        else PageRequest.of(pageable.pageNumber, size, pageable.sort)
+        return if (size == pageable.pageSize) {
+            pageable
+        } else {
+            PageRequest.of(pageable.pageNumber, size, pageable.sort)
+        }
     }
 }

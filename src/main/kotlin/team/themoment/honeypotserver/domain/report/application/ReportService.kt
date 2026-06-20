@@ -27,7 +27,6 @@ class ReportService(
     private val gifRepository: GifRepository,
     private val userService: UserService,
 ) {
-
     fun createReport(
         gifId: Long,
         reasonTitle: String,
@@ -54,34 +53,38 @@ class ReportService(
 
         val reporter = userService.getById(principal.userId)
 
-        val report = Report(
-            reporter = reporter,
-            gif = gif,
-            reasonTitle = reasonTitle,
-            detail = detail,
-            status = ReportStatus.PENDING,
-        )
+        val report =
+            Report(
+                reporter = reporter,
+                gif = gif,
+                reasonTitle = reasonTitle,
+                detail = detail,
+                status = ReportStatus.PENDING,
+            )
 
         return reportRepository.save(report)
     }
 
     @Transactional(readOnly = true)
-    fun getReports(status: ReportStatus?, pageable: Pageable): Page<Report> {
-        return if (status != null) {
+    fun getReports(
+        status: ReportStatus?,
+        pageable: Pageable,
+    ): Page<Report> =
+        if (status != null) {
             reportRepository.findByStatusWithAssociations(status, pageable)
         } else {
             reportRepository.findAll(pageable)
         }
-    }
 
     fun processReport(
         reportId: Long,
         action: ReportAction,
         adminPrincipal: AuthPrincipal,
     ) {
-        val report = reportRepository.findById(reportId).orElseThrow {
-            ExpectedException("신고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        val report =
+            reportRepository.findById(reportId).orElseThrow {
+                ExpectedException("신고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+            }
 
         // Guard against re-processing an already-resolved report to prevent status
         // regression (e.g., BLINDED → NO_ISSUE while the GIF remains blinded).

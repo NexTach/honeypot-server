@@ -12,9 +12,8 @@ import team.themoment.honeypotserver.domain.tag.presentation.dto.response.TagRes
 class TagController(
     private val tagService: TagService,
 ) {
-
     @GetMapping
-    fun searchTags(@RequestParam(defaultValue = "") keyword: String): List<TagResponse> {
-        return tagService.searchByKeyword(keyword).map { TagResponse.from(it) }
-    }
+    fun searchTags(
+        @RequestParam(defaultValue = "") keyword: String,
+    ): List<TagResponse> = tagService.searchByKeyword(keyword).map { TagResponse.from(it) }
 }

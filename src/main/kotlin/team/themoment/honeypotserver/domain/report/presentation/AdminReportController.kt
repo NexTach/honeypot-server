@@ -25,14 +25,11 @@ import team.themoment.honeypotserver.global.security.CurrentUser
 class AdminReportController(
     private val reportService: ReportService,
 ) {
-
     @GetMapping
     fun getReports(
         @RequestParam(required = false) status: ReportStatus?,
         @PageableDefault(size = 20) pageable: Pageable,
-    ): Page<ReportResponse> {
-        return reportService.getReports(status, pageable).map { ReportResponse.from(it) }
-    }
+    ): Page<ReportResponse> = reportService.getReports(status, pageable).map { ReportResponse.from(it) }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

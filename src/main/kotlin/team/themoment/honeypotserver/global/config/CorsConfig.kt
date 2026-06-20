@@ -11,7 +11,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class CorsConfig(
     @Value("\${honeypot.frontend.origin}") private val frontendOrigin: String,
 ) {
-
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()

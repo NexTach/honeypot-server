@@ -16,9 +16,13 @@ class JwtProvider(
         Keys.hmacShaKeyFor(jwtProperties.secret.toByteArray(StandardCharsets.UTF_8))
     }
 
-    fun generateAccessToken(userId: Long, role: Role): String {
+    fun generateAccessToken(
+        userId: Long,
+        role: Role,
+    ): String {
         val now = System.currentTimeMillis()
-        return Jwts.builder()
+        return Jwts
+            .builder()
             .subject(userId.toString())
             .claim(CLAIM_ROLE, role.name)
             .issuedAt(Date(now))
@@ -27,9 +31,13 @@ class JwtProvider(
             .compact()
     }
 
-    fun generateRefreshToken(userId: Long, role: Role): String {
+    fun generateRefreshToken(
+        userId: Long,
+        role: Role,
+    ): String {
         val now = System.currentTimeMillis()
-        return Jwts.builder()
+        return Jwts
+            .builder()
             .subject(userId.toString())
             .claim(CLAIM_ROLE, role.name)
             .issuedAt(Date(now))
@@ -38,9 +46,7 @@ class JwtProvider(
             .compact()
     }
 
-    fun validate(token: String): Boolean {
-        return runCatching { parseClaims(token) }.isSuccess
-    }
+    fun validate(token: String): Boolean = runCatching { parseClaims(token) }.isSuccess
 
     fun extractPrincipal(token: String): AuthPrincipal {
         val claims = parseClaims(token)
@@ -49,13 +55,13 @@ class JwtProvider(
         return AuthPrincipal(userId = userId, role = role)
     }
 
-    private fun parseClaims(token: String): Claims {
-        return Jwts.parser()
+    private fun parseClaims(token: String): Claims =
+        Jwts
+            .parser()
             .verifyWith(signingKey)
             .build()
             .parseSignedClaims(token)
             .payload
-    }
 
     companion object {
         private const val CLAIM_ROLE = "role"

@@ -16,16 +16,17 @@ data class ReportResponse(
     val createdAt: Instant,
 ) {
     companion object {
-        fun from(report: Report): ReportResponse = ReportResponse(
-            id = report.id,
-            reporterId = report.reporter.id,
-            gifId = report.gif.id,
-            reasonTitle = report.reasonTitle,
-            detail = report.detail,
-            status = report.status,
-            processedById = report.processedBy?.id,
-            processedAt = report.processedAt,
-            createdAt = report.createdAt,
-        )
+        fun from(report: Report): ReportResponse =
+            ReportResponse(
+                id = report.id,
+                reporterId = report.reporter.id,
+                gifId = report.gif.id,
+                reasonTitle = report.reasonTitle,
+                detail = report.detail,
+                status = report.status,
+                processedById = report.processedBy?.id,
+                processedAt = report.processedAt,
+                createdAt = report.createdAt,
+            )
     }
 }

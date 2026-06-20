@@ -7,10 +7,7 @@ data class GifUploadRequest(
     @field:NotBlank
     @field:Size(max = 100)
     val title: String,
-
     val description: String? = null,
-
     val isPublic: Boolean = true,
-
     val tags: List<String> = emptyList(),
 )

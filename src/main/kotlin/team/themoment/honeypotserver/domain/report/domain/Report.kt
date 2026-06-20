@@ -30,30 +30,23 @@ class Report(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = false)
     val reporter: User,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gif_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     val gif: Gif,
-
     @Column(nullable = false, length = 100)
     val reasonTitle: String,
-
     @Column(nullable = false, columnDefinition = "TEXT")
     val detail: String,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var status: ReportStatus = ReportStatus.PENDING,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by_id", nullable = true)
     var processedBy: User? = null,
-
     @Column(nullable = true)
     var processedAt: Instant? = null,
 ) : BaseTimeEntity()

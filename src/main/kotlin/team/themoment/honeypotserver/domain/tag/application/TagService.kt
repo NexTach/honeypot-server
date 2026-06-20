@@ -11,7 +11,6 @@ import team.themoment.sdk.exception.ExpectedException
 class TagService(
     private val tagRepository: TagRepository,
 ) {
-
     @Transactional
     fun findOrCreateTags(rawNames: List<String>): List<Tag> {
         if (rawNames.size > MAX_TAGS_PER_GIF) {
@@ -29,8 +28,7 @@ class TagService(
     }
 
     @Transactional(readOnly = true)
-    fun searchByKeyword(keyword: String): List<Tag> =
-        tagRepository.findByNameContainingIgnoreCase(keyword)
+    fun searchByKeyword(keyword: String): List<Tag> = tagRepository.findByNameContainingIgnoreCase(keyword)
 
     private fun normalize(name: String): String {
         val trimmed = name.trim().lowercase()

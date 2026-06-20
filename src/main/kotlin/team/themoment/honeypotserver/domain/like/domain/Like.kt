@@ -26,12 +26,10 @@ class Like(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     val user: User,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gif_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

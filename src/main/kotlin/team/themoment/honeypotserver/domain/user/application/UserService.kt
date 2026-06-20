@@ -12,7 +12,6 @@ import team.themoment.sdk.exception.ExpectedException
 class UserService(
     private val userRepository: UserRepository,
 ) {
-
     fun getById(userId: Long): User =
         userRepository.findById(userId).orElseThrow {
             ExpectedException("User not found", HttpStatus.NOT_FOUND)

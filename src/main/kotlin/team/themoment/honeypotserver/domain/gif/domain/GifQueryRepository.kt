@@ -4,7 +4,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface GifQueryRepository {
-
     /**
      * 가시성 필터가 적용된 GIF 검색/목록.
      * - blindedByAdmin = false AND (isPublic = true OR uploader.id = viewerId)
@@ -21,5 +20,8 @@ interface GifQueryRepository {
     /**
      * 특정 업로더의 모든 GIF (비공개·blinded 포함, 마이페이지용).
      */
-    fun findByUploader(uploaderId: Long, pageable: Pageable): Page<Gif>
+    fun findByUploader(
+        uploaderId: Long,
+        pageable: Pageable,
+    ): Page<Gif>
 }

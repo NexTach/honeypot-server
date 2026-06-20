@@ -13,25 +13,32 @@ class GifStorageAdapter(
     private val s3Client: S3Client,
     private val s3Properties: S3Properties,
 ) {
-
     fun generateKey(): String = "gifs/${UUID.randomUUID()}.gif"
 
-    fun upload(objectKey: String, bytes: ByteArray, contentType: String) {
-        val putRequest = PutObjectRequest.builder()
-            .bucket(s3Properties.bucket)
-            .key(objectKey)
-            .contentType(contentType)
-            .contentLength(bytes.size.toLong())
-            .build()
+    fun upload(
+        objectKey: String,
+        bytes: ByteArray,
+        contentType: String,
+    ) {
+        val putRequest =
+            PutObjectRequest
+                .builder()
+                .bucket(s3Properties.bucket)
+                .key(objectKey)
+                .contentType(contentType)
+                .contentLength(bytes.size.toLong())
+                .build()
 
         s3Client.putObject(putRequest, RequestBody.fromBytes(bytes))
     }
 
     fun delete(objectKey: String) {
-        val deleteRequest = DeleteObjectRequest.builder()
-            .bucket(s3Properties.bucket)
-            .key(objectKey)
-            .build()
+        val deleteRequest =
+            DeleteObjectRequest
+                .builder()
+                .bucket(s3Properties.bucket)
+                .key(objectKey)
+                .build()
 
         s3Client.deleteObject(deleteRequest)
     }

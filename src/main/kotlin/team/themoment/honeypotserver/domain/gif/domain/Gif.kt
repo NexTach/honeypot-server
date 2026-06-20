@@ -31,45 +31,32 @@ class Gif(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-
     @Column(nullable = false, length = 100)
     var title: String,
-
     @Lob
     @Column(nullable = true, columnDefinition = "TEXT")
     var description: String? = null,
-
     @Column(nullable = false)
     var isPublic: Boolean = true,
-
     @Column(nullable = false)
     var blindedByAdmin: Boolean = false,
-
     @Column(nullable = false)
     val objectKey: String,
-
     @Column(nullable = false, length = 100)
     val contentType: String,
-
     @Column(nullable = false)
     val fileSize: Long,
-
     @Column(nullable = true)
     val width: Int? = null,
-
     @Column(nullable = true)
     val height: Int? = null,
-
     @Column(nullable = false, name = "like_count")
     var likeCount: Long = 0,
-
     @Column(nullable = false, name = "share_count")
     var shareCount: Long = 0,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploader_id", nullable = false)
     val uploader: User,
-
     @ManyToMany(cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @JoinTable(
         name = "gif_tags",
@@ -78,8 +65,12 @@ class Gif(
     )
     var tags: MutableList<Tag> = mutableListOf(),
 ) : BaseTimeEntity() {
-
-    fun updateMetadata(title: String, description: String?, isPublic: Boolean, tags: MutableList<Tag>) {
+    fun updateMetadata(
+        title: String,
+        description: String?,
+        isPublic: Boolean,
+        tags: MutableList<Tag>,
+    ) {
         this.title = title
         this.description = description
         this.isPublic = isPublic

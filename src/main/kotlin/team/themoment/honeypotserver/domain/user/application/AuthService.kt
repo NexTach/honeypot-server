@@ -55,19 +55,22 @@ class AuthService(
             throw ExpectedException("Only GSM students are allowed", HttpStatus.FORBIDDEN)
         }
 
-        val student = userInfo.student
-            ?: throw ExpectedException("Student information not found", HttpStatus.FORBIDDEN)
+        val student =
+            userInfo.student
+                ?: throw ExpectedException("Student information not found", HttpStatus.FORBIDDEN)
 
-        val user = userRepository.findByOauthAccountId(userInfo.id)
-            ?.also { it.syncProfile(student.name, student.studentNumber, userInfo.email) }
-            ?: userRepository.save(
-                User(
-                    oauthAccountId = userInfo.id,
-                    name = student.name,
-                    studentNumber = student.studentNumber,
-                    email = userInfo.email,
+        val user =
+            userRepository
+                .findByOauthAccountId(userInfo.id)
+                ?.also { it.syncProfile(student.name, student.studentNumber, userInfo.email) }
+                ?: userRepository.save(
+                    User(
+                        oauthAccountId = userInfo.id,
+                        name = student.name,
+                        studentNumber = student.studentNumber,
+                        email = userInfo.email,
+                    ),
                 )
-            )
 
         val jwtAccess = jwtProvider.generateAccessToken(user.id, user.role)
         val jwtRefresh = jwtProvider.generateRefreshToken(user.id, user.role)
@@ -78,7 +81,10 @@ class AuthService(
         return URI.create("$frontendRedirectUri#accessToken=$jwtAccess")
     }
 
-    fun reissueWithCookie(refreshToken: String?, response: HttpServletResponse): String {
+    fun reissueWithCookie(
+        refreshToken: String?,
+        response: HttpServletResponse,
+    ): String {
         if (refreshToken == null || !jwtProvider.validate(refreshToken)) {
             throw ExpectedException("Invalid or missing refresh token", HttpStatus.UNAUTHORIZED)
         }
@@ -94,19 +100,30 @@ class AuthService(
         response.addHeader("Set-Cookie", buildSecureCookie(REFRESH_TOKEN_COOKIE, "", 0))
     }
 
-    private fun setRefreshTokenCookie(response: HttpServletResponse, refreshToken: String) {
+    private fun setRefreshTokenCookie(
+        response: HttpServletResponse,
+        refreshToken: String,
+    ) {
         val maxAgeSeconds = jwtProperties.refreshTtl.seconds.toInt()
         val cookie = buildSecureCookie(REFRESH_TOKEN_COOKIE, refreshToken, maxAgeSeconds)
         response.addHeader("Set-Cookie", cookie)
     }
 
-    private fun setHttpOnlyCookie(response: HttpServletResponse, name: String, value: String, maxAge: Int) {
+    private fun setHttpOnlyCookie(
+        response: HttpServletResponse,
+        name: String,
+        value: String,
+        maxAge: Int,
+    ) {
         val cookie = buildSecureCookie(name, value, maxAge)
         response.addHeader("Set-Cookie", cookie)
     }
 
-    private fun buildSecureCookie(name: String, value: String, maxAge: Int): String =
-        "$name=$value; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=$maxAge"
+    private fun buildSecureCookie(
+        name: String,
+        value: String,
+        maxAge: Int,
+    ): String = "$name=$value; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=$maxAge"
 
     private fun clearOAuthCookies(response: HttpServletResponse) {
         setHttpOnlyCookie(response, STATE_COOKIE, "", 0)

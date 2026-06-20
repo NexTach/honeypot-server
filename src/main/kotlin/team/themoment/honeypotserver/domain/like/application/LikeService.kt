@@ -20,8 +20,10 @@ class LikeService(
     private val gifQueryService: GifQueryService,
     private val userService: UserService,
 ) {
-
-    fun like(gifId: Long, principal: AuthPrincipal) {
+    fun like(
+        gifId: Long,
+        principal: AuthPrincipal,
+    ) {
         val gif = gifQueryService.getGifDetail(gifId, principal)
 
         if (likeRepository.existsByUserIdAndGifId(principal.userId, gifId)) {
@@ -38,7 +40,10 @@ class LikeService(
         gifRepository.incrementLikeCount(gifId)
     }
 
-    fun unlike(gifId: Long, principal: AuthPrincipal) {
+    fun unlike(
+        gifId: Long,
+        principal: AuthPrincipal,
+    ) {
         // Use a JPQL DELETE that returns affected row count to avoid the TOCTOU race
         // between an existence check and the actual delete. If 0 rows were deleted
         // (no like existed or a concurrent unlike beat us), we skip the counter update.
@@ -49,8 +54,11 @@ class LikeService(
     }
 
     @Transactional(readOnly = true)
-    fun getMyLikes(principal: AuthPrincipal, pageable: Pageable): Page<GifResponse> {
-        return likeRepository.findByUserId(principal.userId, pageable)
+    fun getMyLikes(
+        principal: AuthPrincipal,
+        pageable: Pageable,
+    ): Page<GifResponse> =
+        likeRepository
+            .findByUserId(principal.userId, pageable)
             .map { like -> GifResponse.from(like.gif) }
-    }
 }

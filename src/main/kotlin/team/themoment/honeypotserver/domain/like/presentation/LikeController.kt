@@ -18,7 +18,6 @@ import team.themoment.honeypotserver.global.security.CurrentUser
 class LikeController(
     private val likeService: LikeService,
 ) {
-
     @PostMapping("/v1/gifs/{gifId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun like(
