@@ -1,7 +1,9 @@
 server:
-  # 리버스 프록시(nginx) 뒤에서 X-Forwarded-* (특히 X-Forwarded-Prefix) 를 반영.
-  # Swagger UI/SpringDoc 가 /honeypot prefix 를 인식해 api-docs 경로를 올바르게 생성한다.
-  forward-headers-strategy: framework
+  # 리버스 프록시(nginx)가 /honeypot prefix 를 strip 하지 않고 그대로 전달하므로,
+  # 앱도 동일 context-path 로 서빙한다. (X-Forwarded-Prefix 방식은 the-sdk 응답 래핑과
+  # SpringDoc byte[] 직렬화가 충돌하므로 사용하지 않는다.) 로컬 개발은 빈 값(루트).
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:}
 
 spring:
   application:

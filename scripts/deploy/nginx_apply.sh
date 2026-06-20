@@ -3,7 +3,7 @@ set -euo pipefail
 export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH
 
 # kimtaeeun.site server 블록에 honeypot 리버스 프록시 location 을 적용한다.
-#  - /honeypot/      -> 백엔드 앱(10103), prefix strip + X-Forwarded-Prefix 로 SpringDoc/Swagger prefix 인식
+#  - /honeypot/      -> 백엔드 앱(10103), prefix 보존(앱 context-path=/honeypot 와 일치)
 #  - /honeypot-gifs/ -> SeaweedFS S3(8333), prefix 보존(presigned 서명 path 일치)
 # 매 배포마다 기존 마커 블록을 제거 후 재삽입해 최신 설정을 반영한다(idempotent).
 # teardown 스크립트가 동일 마커로 이 블록을 제거한다.
@@ -43,13 +43,12 @@ cat > "$BLOCK_FILE" <<'EOF'
         client_max_body_size 60M;
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
-        proxy_pass         http://127.0.0.1:10103/;
+        proxy_pass         http://127.0.0.1:10103;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
         proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_set_header   X-Forwarded-Prefix /honeypot;
     }
     location /honeypot-gifs/ {
         client_max_body_size 60M;
