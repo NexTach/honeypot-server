@@ -1,0 +1,77 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Build bootJar
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar -x test --no-daemon
+
+      - name: Stage app.jar
+        run: cp build/libs/*-SNAPSHOT.jar scripts/deploy/app.jar
+
+      - name: Assemble app.env from secrets
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          FRONTEND_ORIGIN: ${{ secrets.FRONTEND_ORIGIN }}
+          FRONTEND_REDIRECT_URI: ${{ secrets.FRONTEND_REDIRECT_URI }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+          S3_PUBLIC_ENDPOINT: ${{ secrets.S3_PUBLIC_ENDPOINT }}
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          DATAGSM_CLIENT_ID: ${{ secrets.DATAGSM_CLIENT_ID }}
+          DATAGSM_CLIENT_SECRET: ${{ secrets.DATAGSM_CLIENT_SECRET }}
+          DATAGSM_REDIRECT_URI: ${{ secrets.DATAGSM_REDIRECT_URI }}
+        run: |
+          {
+            echo "SPRING_DOCKER_COMPOSE_ENABLED=false"
+            echo "DB_URL=${DB_URL}"
+            echo "DB_USERNAME=${DB_USERNAME}"
+            echo "DB_PASSWORD=${DB_PASSWORD}"
+            echo "JWT_SECRET=${JWT_SECRET}"
+            echo "FRONTEND_ORIGIN=${FRONTEND_ORIGIN}"
+            echo "FRONTEND_REDIRECT_URI=${FRONTEND_REDIRECT_URI}"
+            echo "S3_ENDPOINT=${S3_ENDPOINT}"
+            echo "S3_PUBLIC_ENDPOINT=${S3_PUBLIC_ENDPOINT}"
+            echo "S3_ACCESS_KEY=${S3_ACCESS_KEY}"
+            echo "S3_SECRET_KEY=${S3_SECRET_KEY}"
+            echo "S3_BUCKET=${S3_BUCKET}"
+            echo "DATAGSM_CLIENT_ID=${DATAGSM_CLIENT_ID}"
+            echo "DATAGSM_CLIENT_SECRET=${DATAGSM_CLIENT_SECRET}"
+            echo "DATAGSM_REDIRECT_URI=${DATAGSM_REDIRECT_URI}"
+          } > scripts/deploy/app.env
+
+      - name: Deploy via SSH (gsm-sv-deploy)
+        uses: 8G4B/GSM-SV-Deploy@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          user: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source_path: scripts/deploy
+          deployspec_path: scripts/deploy/deployspec.yml
+          target_path: /Users/snowykte0426/deploy/honeypot

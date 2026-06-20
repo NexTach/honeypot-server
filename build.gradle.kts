@@ -18,42 +18,46 @@ java {
 }
 
 repositories {
-	mavenCentral()
-	maven { url = uri("https://jitpack.io") }
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
-	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("tools.jackson.module:jackson-module-kotlin")
-	runtimeOnly("com.mysql:mysql-connector-j")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("tools.jackson.module:jackson-module-kotlin")
+    runtimeOnly("com.mysql:mysql-connector-j")
 
-	// Team SDKs
-	implementation("com.github.themoment-team:the-sdk:1.4")
-	implementation("com.github.themoment-team:datagsm-oauth-sdk-java:1.5.0")
+    // 로컬 개발 시 docker-compose.local.yml(MySQL/SeaweedFS)을 자동 기동/종료.
+    // 배포 환경에서는 SPRING_DOCKER_COMPOSE_ENABLED=false 로 비활성화한다.
+    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 
-	// AWS SDK v2 (SeaweedFS S3-compatible)
-	implementation(platform("software.amazon.awssdk:bom:2.+"))
-	implementation("software.amazon.awssdk:s3")
+    // Team SDKs
+    implementation("com.github.themoment-team:the-sdk:1.4")
+    implementation("com.github.themoment-team:datagsm-oauth-sdk-java:1.5.0")
 
-	// JWT
-	implementation("io.jsonwebtoken:jjwt-api:0.12.+")
-	implementation("io.jsonwebtoken:jjwt-impl:0.12.+")
-	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.+")
+    // AWS SDK v2 (SeaweedFS S3-compatible)
+    implementation(platform("software.amazon.awssdk:bom:2.+"))
+    implementation("software.amazon.awssdk:s3")
 
-	// SpringDoc (Swagger UI) — pin 3.0.x for Spring Boot 4 / Spring Framework 7 compatibility.
-	// the-sdk pulls 2.8.x transitively, which is built against Boot 3 and fails at startup
-	// (NoClassDefFoundError: WebMvcProperties). This direct dependency overrides it.
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.+")
+    implementation("io.jsonwebtoken:jjwt-impl:0.12.+")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.+")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // SpringDoc (Swagger UI) — pin 3.0.x for Spring Boot 4 / Spring Framework 7 compatibility.
+    // the-sdk pulls 2.8.x transitively, which is built against Boot 3 and fails at startup
+    // (NoClassDefFoundError: WebMvcProperties). This direct dependency overrides it.
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-security-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {

@@ -1,0 +1,43 @@
+# honeypot-server 운영 배포용 compose.
+# - app: CI 가 빌드한 app.jar 를 Dockerfile 로 패키징. 호스트 공유 MySQL(3306)에 host.docker.internal 로 접속.
+# - seaweedfs: honeypot 전용 S3 호환 스토리지. 호스트는 127.0.0.1:8333 만 노출하고 nginx 가 외부로 프록시한다.
+# 환경변수는 CD 가 같은 디렉터리에 배치한 app.env 로 주입한다.
+services:
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: honeypot-seaweedfs
+    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json"
+    ports:
+      - "127.0.0.1:8333:8333"
+    volumes:
+      - honeypot-seaweedfs-data:/data
+      - ./s3.json:/etc/seaweedfs/s3.json:ro
+    networks:
+      - honeypot-net
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: honeypot-server-app:latest
+    container_name: honeypot-app
+    depends_on:
+      - seaweedfs
+    ports:
+      - "10103:8080"
+    env_file:
+      - app.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - honeypot-net
+    restart: unless-stopped
+
+networks:
+  honeypot-net:
+    name: honeypot-net
+
+volumes:
+  honeypot-seaweedfs-data:
+    name: honeypot-seaweedfs-data

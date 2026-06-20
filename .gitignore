@@ -38,3 +38,8 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### honeypot deploy artifacts (secrets / build outputs — never commit) ###
+scripts/deploy/app.env
+scripts/deploy/app.jar
+scripts/deploy/s3.json
