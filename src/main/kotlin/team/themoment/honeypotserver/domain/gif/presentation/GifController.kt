@@ -52,10 +52,10 @@ class GifController(
     @ResponseStatus(HttpStatus.CREATED)
     fun uploadGif(
         @RequestPart("file") file: MultipartFile,
-        @RequestPart("title") title: String,
-        @RequestPart(value = "description", required = false) description: String?,
-        @RequestPart(value = "isPublic", required = false) isPublic: String?,
-        @RequestPart(value = "tags", required = false) tags: List<String>?,
+        @RequestParam("title") title: String,
+        @RequestParam(value = "description", required = false) description: String?,
+        @RequestParam(value = "isPublic", required = false) isPublic: String?,
+        @RequestParam(value = "tags", required = false) tags: List<String>?,
         @CurrentUser principal: AuthPrincipal,
     ): GifResponse {
         val gif =
