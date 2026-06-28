@@ -18,7 +18,7 @@ class DataGsmClient(
             dataGsmOAuthClient
                 .createAuthorizationUrl(dataGsmProperties.redirectUri)
                 .state(state)
-                .scope("self:read")
+                .scope("datagsm:self_read")
                 .enablePkce(codeVerifier, "S256")
         return builder.build()
     }

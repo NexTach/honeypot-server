@@ -33,7 +33,7 @@ honeypot:
   frontend:
     # 콤마 구분으로 여러 개 지정 가능 (크로스 플랫폼 대응)
     origins: ${FRONTEND_ORIGINS:http://localhost:3000}
-    redirect-uris: ${FRONTEND_REDIRECT_URIS:http://localhost:3000/auth/callback}
+    redirect-uris: ${FRONTEND_REDIRECT_URIS:http://localhost:3000/callback}
   s3:
     endpoint: ${S3_ENDPOINT:http://localhost:8333}
     public-endpoint: ${S3_PUBLIC_ENDPOINT:}
