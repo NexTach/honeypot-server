@@ -34,7 +34,8 @@ class SecurityConfig(
                     ).permitAll()
                     // 공개 GIF 원본은 외부 메신저(Discord 등)가 인증 없이 링크로 임베드할 수 있어야 한다.
                     // 비공개/블라인드는 GifMediaService 의 가시성 인가가 404 로 차단(앱 계층 관리).
-                    .requestMatchers(HttpMethod.GET, "/v1/gifs/*/raw")
+                    // Discord 임베드용 `.gif` 확장자 경로와 기존 확장자 없는 경로를 모두 허용한다.
+                    .requestMatchers(HttpMethod.GET, "/v1/gifs/*/raw", "/v1/gifs/*/raw.gif")
                     .permitAll()
                     .requestMatchers("/v1/admin/**")
                     .hasRole("ADMIN")

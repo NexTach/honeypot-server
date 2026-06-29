@@ -86,8 +86,11 @@ class GifController(
      * GIF 원본을 백엔드가 직접 중계(프록시)한다. 공개 GIF 는 인증 없이(`permitAll`) 접근 가능해
      * 외부 메신저(Discord 등)가 링크로 임베드할 수 있다. 비공개/블라인드는 [GifMediaService] 의
      * 가시성 인가에서 404 로 떨어진다(미인증 익명 포함).
+     *
+     * Discord 등은 URL 확장자로 미디어 타입을 판별하므로 `.gif` 로 끝나는 경로를 노출한다.
+     * 확장자 없는 기존 `/raw` 도 하위호환을 위해 함께 매핑한다.
      */
-    @GetMapping("/{id}/raw")
+    @GetMapping("/{id}/raw", "/{id}/raw.gif")
     fun getGifRaw(
         @PathVariable id: Long,
         @CurrentUser principal: AuthPrincipal?,

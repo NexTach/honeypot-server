@@ -49,6 +49,6 @@ class JwtAuthenticationFilter(
         private const val AUTHORIZATION_HEADER = "Authorization"
         private const val BEARER_PREFIX = "Bearer "
         private const val ACCESS_TOKEN_COOKIE = "accessToken"
-        private val RAW_PATH_REGEX = Regex("""^/v1/gifs/\d+/raw$""")
+        private val RAW_PATH_REGEX = Regex("""^/v1/gifs/\d+/raw(\.gif)?$""")
     }
 }
