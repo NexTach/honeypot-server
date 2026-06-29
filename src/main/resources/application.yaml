@@ -36,11 +36,12 @@ honeypot:
     redirect-uris: ${FRONTEND_REDIRECT_URIS:http://localhost:3000/callback}
   s3:
     endpoint: ${S3_ENDPOINT:http://localhost:8333}
-    public-endpoint: ${S3_PUBLIC_ENDPOINT:}
     access-key: ${S3_ACCESS_KEY:accessKey}
     secret-key: ${S3_SECRET_KEY:secretKey}
     bucket: ${S3_BUCKET:honeypot}
-    presign-ttl: 60s
+  media:
+    # 공개 GIF /raw 응답의 Cache-Control max-age(초). 즉시성을 더 강하게 원하면 0.
+    public-cache-ttl: ${MEDIA_PUBLIC_CACHE_TTL:60}
 
 datagsm:
   oauth:

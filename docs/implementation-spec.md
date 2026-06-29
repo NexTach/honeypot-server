@@ -41,7 +41,7 @@
 | 13 | 공유수 | 복사 액션마다 무조건 +1 (dedup 없음, 별도 로그 테이블 없음) |
 | 14 | GIF 상태 | 단일 `isPublic` + `blindedByAdmin` Boolean, **hard delete** |
 | 15 | 신고-삭제 | GIF hard delete 시 연관 신고/추천/태그 **cascade 삭제**, 신고는 독립 처리 |
-| 16 | 미디어 서빙 | 백엔드 가시성 인가 후 SeaweedFS **단기 presigned URL로 302 리다이렉트** |
+| 16 | 미디어 서빙 | `/raw` 는 **백엔드 바이트 프록시**. 공개 GIF 는 **인증 불필요**(외부 메신저 임베드용), 비공개/블라인드는 앱 가시성 인가로 404 |
 | 17 | 썸네일 | 생성 안 함, 원본 GIF만 사용 |
 | 18 | API 컨벤션 | `the-sdk` 사용 (`CommonApiResponse` 자동 래핑, `ExpectedException` + 자동 `GlobalExceptionHandler`, SpringDoc Swagger) |
 | 19 | 스키마 관리 | JPA `ddl-auto=update` (Flyway 미사용) |
@@ -108,7 +108,7 @@ dependencies {
     implementation("com.github.themoment-team:the-sdk:1.4")
     implementation("com.github.themoment-team:datagsm-oauth-sdk-java:1.5.0")
 
-    // S3 호환 (SeaweedFS) 접근 + presigned URL
+    // S3 호환 (SeaweedFS) 접근
     implementation(platform("software.amazon.awssdk:bom:2.+"))
     implementation("software.amazon.awssdk:s3")
 
@@ -232,9 +232,9 @@ dependencies {
 ### 6.3 Spring Security
 
 - `JwtAuthenticationFilter`(OncePerRequestFilter) 가 `Authorization` 헤더 검증 → `SecurityContext` 에 `AuthPrincipal(userId, role)` 적재.
-- `@CurrentUser` ArgumentResolver 로 컨트롤러에서 현재 유저 주입.
+- `@CurrentUser` ArgumentResolver 로 컨트롤러에서 현재 유저 주입. permitAll 경로용으로 **nullable(`AuthPrincipal?`) 주입 지원** — 미인증 시 `null`(파라미터가 non-null 이면 기존대로 예외).
 - 인가 규칙:
-  - 인증 불필요: `/v1/auth/datagsm/**`, `/v1/auth/reissue`, `/swagger-ui/**`, `/v3/api-docs/**`.
+  - 인증 불필요: `/v1/auth/datagsm/**`, `/v1/auth/reissue`, `/swagger-ui/**`, `/v3/api-docs/**`, **`GET /v1/gifs/*/raw`**(공개 GIF 외부 임베드용 — 비공개/블라인드는 앱 가시성 인가로 404).
   - **그 외 모든 API 는 인증 필요** (학교 내부 서비스 — 익명 브라우징 미지원).
   - `/v1/admin/**` 는 `ROLE_ADMIN` 필요.
 - CSRF: 메인 API 는 Authorization 헤더 기반이라 안전. 쿠키 기반 엔드포인트(`/reissue`, `/logout`)는 SameSite=None + CORS(응답 교차출처 read 차단)에 의존하며, 필요 시 double-submit 토큰 보강.
@@ -261,7 +261,7 @@ dependencies {
 | POST | `/v1/gifs` | 업로드 (multipart: `file` + 메타데이터) | 인증 |
 | GET | `/v1/gifs` | 검색/목록 `?keyword=&sort=latest\|popular&page=&size=` | 인증 |
 | GET | `/v1/gifs/{id}` | 상세 (가시성 검증) | 인증 |
-| GET | `/v1/gifs/{id}/raw` | presigned URL 로 302 (가시성 검증) | 인증 |
+| GET | `/v1/gifs/{id}/raw` | 원본 바이트 프록시 (가시성 검증) | **공개**(비공개·블라인드는 404) |
 | PATCH | `/v1/gifs/{id}` | 메타데이터 수정(title/description/tags/isPublic) — 파일 자체는 수정 불가 | 소유자 |
 | DELETE | `/v1/gifs/{id}` | hard delete | 소유자 |
 | POST | `/v1/gifs/{id}/share` | shareCount +1, 갱신값 반환 | 인증 |
@@ -298,13 +298,16 @@ dependencies {
 
 ### 8.2 스토리지 어댑터 (SeaweedFS / S3)
 - AWS SDK v2 `S3Client` 를 SeaweedFS S3 엔드포인트로 구성: `endpointOverride`, **path-style access 활성화**, env 자격증명(`S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`).
-- 업로드: `PutObject`. 삭제: `DeleteObject`(GIF hard delete 시 호출).
+- 업로드: `PutObject`. 삭제: `DeleteObject`(GIF hard delete 시 호출). 미디어 서빙: `GetObject` 스트림.
+- SeaweedFS 버킷은 **인증 전용**(anonymous 미설정). 공개/비공개 구분은 storage 가 아니라 앱이 매 요청 가시성 검사로 관리한다.
 
-### 8.3 미디어 서빙
-- `GET /v1/gifs/{id}/raw`:
-  1. 가시성 인가: `blindedByAdmin == false` AND (`isPublic == true` OR `uploader == me`) — 아니면 404 (관리자는 전체 허용).
-  2. `S3Presigner` 로 **단기(예: 60초) presigned GET URL** 생성.
-  3. 해당 URL 로 **302 리다이렉트** — 바이트는 SeaweedFS 가 직접 전송(백엔드 대역폭 절감).
+### 8.3 미디어 서빙 — 백엔드 바이트 프록시
+- `GET /v1/gifs/{id}/raw` 는 **인증 불필요(`permitAll`)** 경로다. 외부 메신저(Discord 등)가 GIF 를 파일이 아닌 **링크로 임베드**하므로 인증 헤더 없이 열려야 한다.
+  1. 가시성 인가(앱 계층): `blindedByAdmin == false` AND (`isPublic == true` OR `uploader == me`) — 아니면 **404** (관리자는 전체 허용). 익명 요청은 공개 GIF 만 통과.
+  2. SeaweedFS `GetObject` 스트림을 백엔드가 **그대로 중계**한다(`Content-Type: image/gif`, `Content-Length` 설정, 스트림 close 보장).
+  3. `Cache-Control`: 공개 → `public, max-age=${honeypot.media.public-cache-ttl}`(기본 60초), 비공개 → `private, no-store`.
+- **즉시성**: 매 요청 DB 가시성을 재검사하므로 공개→비공개/블라인드 전환이 다음 요청부터 즉시 404 로 반영된다(오리진 기준). presigned URL 발급/객체 이동 없음.
+- 비공개 GIF 를 소유자가 SPA `<img>` 로 볼 때는 Authorization 헤더를 실을 수 없어, `JwtAuthenticationFilter` 가 `/raw` 에 한해 `accessToken` 쿠키를 토큰 fallback 으로 허용한다.
 - 썸네일 없음: 목록/상세 모두 동일 `/raw` 사용.
 
 ---
@@ -396,7 +399,8 @@ honeypot:
     access-key: ${S3_ACCESS_KEY}
     secret-key: ${S3_SECRET_KEY}
     bucket: ${S3_BUCKET}
-    presign-ttl: 60s
+  media:
+    public-cache-ttl: ${MEDIA_PUBLIC_CACHE_TTL:60}   # 공개 GIF /raw Cache-Control max-age(초)
 
 datagsm.oauth:
   client-id: ${DATAGSM_CLIENT_ID}
@@ -416,14 +420,14 @@ sdk:                      # the-sdk
 
 인터뷰에서 명시되지 않아 **합리적 기본값으로 확정**한 항목 (필요 시 조정):
 
-1. **모든 API 인증 필요** — 공개 GIF 도 익명 브라우징 불가(학교 내부 서비스). 익명 열람을 원하면 목록/상세/raw 를 공개로 전환.
+1. **`GET /v1/gifs/*/raw` 만 익명 허용**, 그 외 모든 API 는 인증 필요(학교 내부 서비스). 공개 GIF 의 원본 바이트만 외부 메신저 임베드를 위해 무인증 프록시로 열고, 목록/상세 등 메타데이터 조회는 인증 유지.
 2. **신고 중복/자기신고**: 같은 신고자-GIF 의 `PENDING` 중복 신고는 409 차단, 본인 GIF 신고는 400 차단.
 3. **신고 사유**: `reasonTitle`/`detail` 모두 자유 텍스트(사전 정의 카테고리 없음).
 4. **JWT TTL**: access 30분 / refresh 14일.
 5. **콜백→프론트 핸드오프**: 백엔드 콜백이 refresh 쿠키 설정 후 프론트 redirect-uri 로 302, access token 은 URL fragment(`#accessToken=`)로 전달.
 6. **태그 제약**: GIF 당 최대 20개, 태그당 최대 30자, `trim` + 소문자 정규화.
 7. **제목/설명/신고 길이**: title ≤ 100, description ≤ 1000, reasonTitle ≤ 100, detail ≤ 1000.
-8. **presigned TTL** 60초, **업로드 max** 50MB — env 로 조정.
+8. **공개 GIF `/raw` Cache-Control max-age** 60초(`honeypot.media.public-cache-ttl`), **업로드 max** 50MB — env 로 조정.
 9. **`blindedByAdmin` GIF 의 소유자 노출**: 마이페이지(`/users/me/gifs`)에서는 blinded 상태로 표기해 보이되, 검색/상세/raw 에서는 숨김. (소유자가 직접 삭제는 가능.)
 10. **width/height 메타데이터 추출**: 선택 사항 — 미구현해도 무방(엔티티 nullable).
 
@@ -438,7 +442,7 @@ sdk:                      # the-sdk
 
 1. **기반**: 의존성 추가, `global.config`(Security/CORS/S3/DataGSM/Jackson), the-sdk 연동 확인, docker-compose(MySQL+SeaweedFS) 기동.
 2. **인증**: DataGSM 로그인/콜백 → 유저 프로비저닝 → 자체 JWT(발급/필터/재발급/로그아웃), `@CurrentUser`. 비학생 거부.
-3. **GIF 업로드/조회**: 엔티티 + 스토리지 어댑터 + 업로드 검증 + presigned 서빙(`/raw`).
+3. **GIF 업로드/조회**: 엔티티 + 스토리지 어댑터 + 업로드 검증 + 바이트 프록시 서빙(`/raw`).
 4. **검색/목록**: keyword + 정렬 + 가시성 필터 + 페이지네이션, 마이페이지(내 GIF).
 5. **태그**: Tag 엔티티 + find-or-create + 검색 통합.
 6. **추천**: Like 엔티티 + 카운터 + 인기순 정렬 + 내가 추천한 GIF.
